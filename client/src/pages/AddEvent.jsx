@@ -1,50 +1,42 @@
-import  { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { UserContext } from '../UserContext';
 
 export default function AddEvent() {
-  const {user} = useContext(UserContext);
+  const { user } = useContext(UserContext);
   const [formData, setFormData] = useState({
-
-    owner: user? user.name : "",
+    owner: user ? user.name : "",
     title: "",
-    optional:"",
+    optional: "",
     description: "",
     organizedBy: "",
     eventDate: "",
     eventTime: "",
     location: "",
     ticketPrice: 0,
-    image: '',
+    imageURL: '', // New field for the image URL
     likes: 0
   });
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    setFormData((prevState) => ({ ...prevState, image: file }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
   };
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (files) {
-      setFormData((prevState) => ({ ...prevState, [name]: files[0] }));
-    } else {
-      setFormData((prevState) => ({ ...prevState, [name]: value }));
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+  
+    try {
+      const response = await axios.post("/createEvent", formData);
+      console.log(response);
+    } catch (error) {
+      console.log("Error submitting form:", error);
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    axios
-      .post("/createEvent", formData)
-      .then((response) => {
-        console.log("Event posted successfully:", response.data);
-        
-      })
-      .catch((error) => {
-        console.error("Error posting event:", error);
-      });
-  };
+  useEffect(() => {
+    console.log("Form Data:", formData);
+  }, [formData]);
 
   return (
     <div className='flex flex-col ml-20 mt-10'>
@@ -132,19 +124,18 @@ export default function AddEvent() {
           />
         </label>
         <label className='flex flex-col'>
-          Image:
+          Image URL:
           <input
-            type="file"
-            name="image"
-            
-            className=' rounded mt-2 pl-5 px-4 py-10 ring-sky-700 ring-2 h-8 border-none'
-            onChange={handleImageUpload}
+            type="text"
+            name="imageURL"
+            className=' rounded mt-2 pl-5 px-4 ring-sky-700 ring-2 h-8 border-none'
+            value={formData.imageURL}
+            onChange={handleChange}
           />
-        </label >
+        </label>
         <button className='primary' type="submit">Submit</button>
-        </div>
-        
-      </form>
-    </div>
+      </div>
+    </form>
+  </div>
   );
 }
